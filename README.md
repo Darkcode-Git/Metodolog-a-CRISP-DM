@@ -2,7 +2,6 @@
 
 Dashboard educativo para consultar precios históricos, promedios móviles y métricas de acciones. La aplicación usa Yahoo Finance mediante `yfinance` y conserva el notebook original como material complementario.
 
-> **Aviso:** este proyecto tiene fines educativos. Los datos pueden tener retrasos, errores o no estar disponibles. El análisis no es asesoría ni una recomendación de inversión.
 
 ## Ejecutar localmente
 
