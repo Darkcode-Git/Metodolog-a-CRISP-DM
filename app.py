@@ -71,7 +71,13 @@ resumen_visible = {
     "Rendimiento por dividendo": resumen["Dividend Yield"],
 }
 st.dataframe(
-    pd.DataFrame.from_dict(resumen_visible, orient="index", columns=["Valor"]),
-    use_container_width=True,
+    pd.DataFrame(
+        {
+            "Métrica": list(resumen_visible),
+            "Valor": [str(valor) for valor in resumen_visible.values()],
+        }
+    ),
+    width="stretch",
+    hide_index=True,
 )
 st.caption("Los datos se almacenan en caché durante 15 minutos.")
