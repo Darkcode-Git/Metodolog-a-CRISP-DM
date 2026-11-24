@@ -38,7 +38,7 @@ herramienta educativa y no constituye asesoría financiera.
 - `analisis_acciones/modelo.py`: preparación de variables, validación temporal y predicción con Random Forest.
 - `tests/`: pruebas deterministas; no requieren acceso a Internet ni datos financieros en vivo.
 - `Parra_Juan_Analizando_EA1.ipynb`: notebook original del análisis.
-- `.github/workflows/ci.yml`: integración continua en solicitudes de cambios y actualizaciones de `main`.
+- `.github/workflows/ci-cd.yml`: CI en cambios y CD automático desde `main`.
 
 ## Flujo de trabajo DevOps con GitHub
 
@@ -55,7 +55,10 @@ Se recomienda proteger `main` desde **Settings → Rules → Rulesets**: exigir 
 
 ### Integración continua (GitHub Actions)
 
-El workflow ejecuta las pruebas con Python 3.11 en cada pull request dirigido a `main` y en cada actualización de `main`. La comprobación de CI debe estar aprobada antes de fusionar cambios; las pruebas usan datos locales simulados para ser reproducibles y no dependen de la API de Yahoo Finance.
+El workflow ejecuta `flake8` y las pruebas con cobertura en Python 3.10 y 3.11
+para cada pull request dirigido a `main` y cada actualización de esa rama. Un
+fallo en las pruebas bloquea el job de despliegue. Las pruebas usan datos locales
+simulados para ser reproducibles y no dependen de la API de Yahoo Finance.
 
 ### Despliegue continuo (Streamlit Community Cloud)
 
@@ -65,6 +68,11 @@ Streamlit Community Cloud publica y actualiza la aplicación al detectar cambios
 2. Crea una aplicación seleccionando este repositorio, la rama `main` y el archivo `app.py`.
 3. Guarda la URL pública que Streamlit asigna a la aplicación. Los siguientes cambios fusionados a `main` se publican automáticamente.
 4. Protege `main` y exige CI según los pasos anteriores; así, la ruta recomendada de despliegue son las fusiones de pull requests con pruebas aprobadas.
+
+Si el proveedor necesita una notificación explícita, guarda su URL en el secreto
+`DEPLOY_WEBHOOK_URL`. Después de que ambas ejecuciones de CI aprueben un push a
+`main`, GitHub Actions envía el webhook desde el entorno `production`. Sin este
+secreto, el pipeline deja la publicación al monitoreo GitOps del PaaS.
 
 La publicación necesita una cuenta autorizada de Streamlit Community Cloud y no puede completarse únicamente desde este repositorio. La aplicación no requiere secretos: consume datos públicos de Yahoo Finance. Si en el futuro se añaden credenciales, deben guardarse en **App settings → Secrets** de Streamlit, nunca en el código ni en GitHub.
 
