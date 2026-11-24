@@ -1,6 +1,9 @@
 # Análisis de acciones con Streamlit
 
-Dashboard educativo para consultar precios históricos, promedios móviles y métricas de acciones. La aplicación usa Yahoo Finance mediante `yfinance` y conserva el notebook original como material complementario.
+Dashboard educativo para consultar precios históricos, promedios móviles, métricas y
+una predicción experimental de tendencia. La aplicación usa Yahoo Finance mediante
+`yfinance`, Scikit-Learn para el modelo de clasificación y conserva el notebook
+original como material complementario.
 
 
 ## Ejecutar localmente
@@ -14,12 +17,25 @@ python -m pip install -r requirements-dev.txt
 streamlit run app.py
 ```
 
-La aplicación presenta diez acciones de referencia, precios de un año, medias móviles de 20 y 50 sesiones, rendimiento, volatilidad anualizada, ratio de Sharpe, volumen y metadatos disponibles. Los resultados se almacenan en caché durante 15 minutos para limitar solicitudes repetidas a Yahoo Finance. La disponibilidad de empresas, métricas y cotizaciones depende del proveedor externo.
+La aplicación presenta diez acciones de referencia, precios de dos años, medias
+móviles de 5, 20 y 50 sesiones, rendimiento, volatilidad anualizada, ratio de
+Sharpe, volumen y metadatos disponibles. Los resultados se almacenan en caché
+durante 15 minutos para limitar solicitudes repetidas a Yahoo Finance. La
+disponibilidad de empresas, métricas y cotizaciones depende del proveedor externo.
+
+El modelo Random Forest estima si el cierre de la siguiente sesión será alcista
+o bajista/lateral. Usa retorno diario, SMA 5, SMA 20, desviación estándar del
+precio de cierre a 10 sesiones y el ratio entre el volumen y su promedio de 20
+sesiones. La evaluación
+es temporal: los datos más recientes quedan reservados para medir la precisión;
+después se reentrena con todas las sesiones etiquetadas antes de predecir. Es una
+herramienta educativa y no constituye asesoría financiera.
 
 ## Arquitectura
 
 - `app.py`: interfaz Streamlit y consulta de datos externos.
 - `analisis_acciones/metricas.py`: cálculos puros reutilizados por la aplicación y las pruebas.
+- `analisis_acciones/modelo.py`: preparación de variables, validación temporal y predicción con Random Forest.
 - `tests/`: pruebas deterministas; no requieren acceso a Internet ni datos financieros en vivo.
 - `Parra_Juan_Analizando_EA1.ipynb`: notebook original del análisis.
 - `.github/workflows/ci.yml`: integración continua en solicitudes de cambios y actualizaciones de `main`.

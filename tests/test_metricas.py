@@ -27,11 +27,16 @@ def test_calcular_indicadores_agrega_medias_y_no_modifica_entrada():
     resultado = calcular_indicadores(historial)
 
     assert "SMA20" not in historial.columns
+    assert resultado.loc[resultado.index[4], "SMA5"] == pytest.approx(102.0)
     assert resultado.loc[resultado.index[19], "SMA20"] == pytest.approx(109.5)
     assert resultado.loc[resultado.index[49], "SMA50"] == pytest.approx(124.5)
     assert resultado.loc[resultado.index[1], "Retorno Diario"] == pytest.approx(
         1 / 100
     )
+    assert resultado.loc[resultado.index[9], "Volatilidad 10"] == pytest.approx(
+        3.0276503541
+    )
+    assert resultado["Ratio Volumen 20"].dropna().eq(1.0).all()
 
 
 def test_calcular_indicadores_exige_precio_de_cierre():

@@ -4,7 +4,11 @@ import pandas as pd
 import streamlit as st
 import yfinance as yf
 
-from analisis_acciones import calcular_indicadores, resumen_financiero
+from analisis_acciones import (
+    calcular_indicadores,
+    predecir_tendencia,
+    resumen_financiero,
+)
 
 
 ACCIONES = {
@@ -25,10 +29,16 @@ ACCIONES = {
 def descargar_datos(ticker: str) -> tuple[pd.DataFrame, dict, pd.DataFrame]:
     """Obtiene historial y metadatos de Yahoo Finance; la caché dura 15 minutos."""
     accion = yf.Ticker(ticker)
-    historial = accion.history(period="1y")
+    historial = accion.history(period="2y", auto_adjust=True)
     if historial is None or historial.empty:
         raise ValueError(f"No se encontraron precios históricos para {ticker}.")
     return historial, accion.info or {}, accion.quarterly_balance_sheet
+
+
+@st.cache_data(ttl=900, show_spinner=False)
+def obtener_prediccion(historial: pd.DataFrame):
+    """Reutiliza el entrenamiento mientras los datos financieros estén en caché."""
+    return predecir_tendencia(historial)
 
 
 st.set_page_config(page_title="Análisis de acciones", page_icon="📈", layout="wide")
@@ -58,7 +68,33 @@ columnas[2].metric("Volatilidad anualizada", f"{resumen['Volatilidad %']:.2f}%")
 columnas[3].metric("Sharpe Ratio", f"{resumen['Sharpe Ratio']:.2f}")
 
 st.subheader(f"Precio de cierre y promedios móviles — {empresa}")
-st.line_chart(indicadores[["Close", "SMA20", "SMA50"]])
+st.line_chart(indicadores[["Close", "SMA5", "SMA20", "SMA50"]])
+
+st.subheader("Predicción del próximo cierre")
+try:
+    prediccion = obtener_prediccion(historial)
+except (TypeError, ValueError) as error:
+    st.warning(f"No fue posible entrenar el modelo: {error}")
+else:
+    columnas_prediccion = st.columns(3)
+    columnas_prediccion[0].metric("Tendencia estimada", prediccion.etiqueta)
+    columnas_prediccion[1].metric(
+        "Probabilidad del pronóstico", f"{prediccion.probabilidad:.1%}"
+    )
+    precision = (
+        f"{prediccion.precision_validacion:.1%}"
+        if prediccion.precision_validacion is not None
+        else "No disponible"
+    )
+    columnas_prediccion[2].metric("Precisión temporal", precision)
+    st.caption(
+        f"Random Forest entrenado con {prediccion.muestras_entrenamiento} sesiones. "
+        "La señal es experimental y no constituye asesoría financiera."
+    )
+    with st.expander("Importancia de las variables"):
+        st.bar_chart(
+            pd.Series(prediccion.importancias, name="Importancia").sort_values()
+        )
 
 st.subheader("Resumen")
 resumen_visible = {
@@ -80,4 +116,7 @@ st.dataframe(
     width="stretch",
     hide_index=True,
 )
-st.caption("Los datos se almacenan en caché durante 15 minutos.")
+st.caption(
+    "Los datos se actualizan desde Yahoo Finance y se almacenan en caché durante "
+    "15 minutos."
+)

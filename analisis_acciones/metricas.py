@@ -7,14 +7,23 @@ import pandas as pd
 
 
 def calcular_indicadores(historial: pd.DataFrame) -> pd.DataFrame:
-    """Devuelve el historial con promedios móviles y retornos diarios."""
+    """Devuelve el historial con indicadores técnicos para el modelo."""
     if "Close" not in historial.columns:
         raise ValueError("El historial debe incluir la columna 'Close'.")
 
     resultado = historial.copy()
+    resultado["SMA5"] = resultado["Close"].rolling(5).mean()
     resultado["SMA20"] = resultado["Close"].rolling(20).mean()
     resultado["SMA50"] = resultado["Close"].rolling(50).mean()
     resultado["Retorno Diario"] = resultado["Close"].pct_change()
+    resultado["Volatilidad 10"] = resultado["Close"].rolling(10).std()
+
+    if "Volume" in resultado.columns:
+        volumen_promedio = resultado["Volume"].rolling(20).mean()
+        resultado["Ratio Volumen 20"] = resultado["Volume"].div(
+            volumen_promedio.where(volumen_promedio > 0)
+        )
+
     return resultado
 
 
