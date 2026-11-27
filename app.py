@@ -3,6 +3,9 @@
 import pandas as pd
 import streamlit as st
 import yfinance as yf
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 
 from analisis_acciones import (
     calcular_indicadores,
@@ -122,12 +125,6 @@ st.caption(
 )
 
 # File: stock_analysis_app.py
-import yfinance as yf
-import pandas as pd
-import numpy as np
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 
 def descargar_datos_accion(ticker="AAPL", period="1y"):
     """Descarga datos históricos de cotizaciones desde Yahoo Finanzas."""
