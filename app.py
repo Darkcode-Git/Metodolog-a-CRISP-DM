@@ -165,10 +165,3 @@ def entrenar_modelo_prediccion(df):
     acc = accuracy_score(y_test, preds)
     return model, acc
 
-if __name__ == "__main__":
-    ticker_simbolo = "AAPL"
-    print(f"[+] Extrayendo datos de {ticker_simbolo}...")
-    df_raw = descargar_datos_accion(ticker_simbolo)
-    df_proc = preparar_features(df_raw)
-    modelo, exactitud = entrenar_modelo_prediccion(df_proc)
-    print(f"[✓] Modelo entrenado con éxito. Exactitud en test: {exactitud:.2%}")
